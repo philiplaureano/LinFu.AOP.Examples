@@ -60,6 +60,6 @@
   </PropertyGroup>
   <UsingTask TaskName="PostWeaveTask" AssemblyFile="$(PostWeaveTaskLocation)" />
   <Target Name="AfterBuild">
-    <PostWeaveTask TargetFile="$(MSBuildProjectDirectory)\$(OutputPath)$(MSBuildProjectName).dll" InterceptAllMethodCalls="true" />
+    <PostWeaveTask TargetFile="$(MSBuildProjectDirectory)\$(OutputPath)$(MSBuildProjectName).dll" InterceptAllMethodCalls="false" />
   </Target>
 </Project>
