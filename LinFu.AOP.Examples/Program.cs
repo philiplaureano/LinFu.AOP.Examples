@@ -7,41 +7,21 @@ using SampleLibrary;
 
 namespace LinFu.AOP.Examples
 {
-    public class ConsoleInterceptor : IInterceptor
+    public class SampleExceptionHandler : IExceptionHandler
     {
-        public object Intercept(IInvocationInfo info)
+        public bool CanCatch(IExceptionHandlerInfo exceptionHandlerInfo)
         {
-            var targetType = info.TargetMethod.DeclaringType;
-            var target = info.Target;
-            var targetMethod = info.TargetMethod;
-            var arguments = info.Arguments;
-
-            Console.WriteLine("Intercepted method named '{0}'", targetMethod.Name);
-
-            // Call the original WriteLine method
-            targetMethod.Invoke(null, arguments);
-
-            // Console.WriteLine doesn't have a return value so it's OK to return null)
-            return null;
-        }
-    }
-
-    public class WriteLineMethodReplacementProvider : IMethodReplacementProvider
-    {
-        public bool CanReplace(object host, IInvocationInfo info)
-        {
-            var declaringType = info.TargetMethod.DeclaringType;
-            if (declaringType != typeof(System.Console))
-                return false;
-
-            // We're only interested in replacing Console.WriteLine()
-            var targetMethod = info.TargetMethod;
-            return targetMethod.Name == "WriteLine";
+            return true;
         }
 
-        public IInterceptor GetMethodReplacement(object host, IInvocationInfo info)
+        public void Catch(IExceptionHandlerInfo exceptionHandlerInfo)
         {
-            return new ConsoleInterceptor();
+            var exception = exceptionHandlerInfo.Exception;
+            Console.WriteLine("Exception caught: {0}", exception);
+            
+            // This line tells LinFu.AOP to swallow the thrown exception;
+            // By default, LinFu will just rethrow the exception
+            exceptionHandlerInfo.ShouldSkipRethrow = true;
         }
     }
 
@@ -49,13 +29,13 @@ namespace LinFu.AOP.Examples
     {
         static void Main(string[] args)
         {
+            // Hook the sample exception handler into the application
+            ExceptionHandlerRegistry.SetHandler(new SampleExceptionHandler());
+
             var account = new BankAccount(100);
 
-            // LinFu.AOP automatically implements IModifiableType so you can intercept/replace method calls at runtime
-            var modifiableType = account as IModifiableType;
-            if (modifiableType != null)
-                modifiableType.MethodCallReplacementProvider = new WriteLineMethodReplacementProvider();
-
+            // Without LinFu's dynamic exception handling, the 
+            // next line of code will cause the app to crash:
             account.Deposit(100);
 
             return;

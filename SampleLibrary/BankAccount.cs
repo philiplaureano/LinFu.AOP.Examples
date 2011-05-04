@@ -24,8 +24,9 @@ namespace SampleLibrary
         {
             _balance += amount;
 
-            Console.WriteLine("Deposited: {0}", amount);
-            Console.WriteLine("New Balance: {0}", Balance);
+            // The app should crash at this point 
+            // if LinFu doesn't intercept the exception
+            throw new ApplicationException("Boom!");
         }
 
         public void Withdraw(int amount)
